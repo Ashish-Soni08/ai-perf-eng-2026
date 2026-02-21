@@ -74,23 +74,38 @@ Returns `{"status": "ok"}` if the server is running.
 
 ```json
 {
-  "github_url": "https://github.com/psf/requests"
+  "github_url": "https://github.com/vercel-labs/json-render"
 }
 ```
 
-**Success Response (200):**
+**Success Response (200):** *(real example from our API)*
 
 ```json
 {
-  "summary": "Requests is a popular, elegant HTTP library for Python...",
-  "technologies": ["Python", "urllib3", "certifi", "chardet"],
-  "structure": "The main source code is in `src/requests/`, with tests in `tests/` and documentation in `docs/`.",
+  "summary": "json-render is a Generative UI framework that enables AI to generate dynamic, type-safe user interfaces from natural language prompts. It constrains AI output to predefined component catalogs using Zod schemas and renders JSON specs across multiple platforms including React (web), React Native (mobile), PDF documents, and video compositions via Remotion. The framework supports streaming responses for progressive UI rendering and includes 36 pre-built shadcn/ui components for rapid development.",
+  "technologies": [
+    "TypeScript",
+    "React",
+    "Next.js",
+    "Zod",
+    "Tailwind CSS",
+    "Radix UI",
+    "Vercel AI SDK",
+    "Remotion",
+    "React PDF",
+    "Expo",
+    "Drizzle ORM",
+    "Stripe SDK",
+    "pnpm",
+    "Turbo"
+  ],
+  "structure": "The repository is organized as a monorepo with packages/ containing the core framework (@json-render/core) and platform-specific renderers (react, react-native, react-pdf, remotion, shadcn, codegen), apps/web housing the Next.js documentation site with MDX content, and examples/ providing reference implementations including chat interfaces, dashboards, Stripe apps, mobile applications, and PDF generation demos.",
   "repo_metadata": {
-    "name": "requests",
-    "owner": "psf",
-    "url": "https://github.com/psf/requests",
-    "stars": 52000,
-    "language": "Python",
+    "name": "json-render",
+    "owner": "vercel-labs",
+    "url": "https://github.com/vercel-labs/json-render",
+    "stars": 11123,
+    "language": "TypeScript",
     "default_branch": "main"
   }
 }
