@@ -13,46 +13,50 @@ A FastAPI service that takes a public GitHub repository URL and returns a struct
 
 ### Setup
 
+**1. Clone the repository**
+
 ```bash
-# 1. Clone the repository
 git clone https://github.com/Ashish-Soni08/ai-perf-eng-2026.git
 cd ai-perf-eng-2026
+```
 
-# 2. Create a virtual environment and install dependencies
+**2. Setup environment (macOS/Linux)**
+
+```bash
 python -m venv .venv
-
-# On Windows:
-.venv\Scripts\activate
-
-# On macOS/Linux:
 source .venv/bin/activate
-
 pip install -r requirements.txt
-
-# 3. Set your Nebius API key
-# On Windows (PowerShell):
-$env:NEBIUS_API_KEY="your-api-key-here"
-
-# On macOS/Linux:
 export NEBIUS_API_KEY="your-api-key-here"
+```
 
-# Or create a .env file (auto-loaded by the app):
-echo "NEBIUS_API_KEY=your-api-key-here" > .env
+**3. Setup environment (Windows)**
 
-# 4. (Optional) Set a GitHub token for higher rate limits
-export GITHUB_TOKEN="your-github-token"
+```powershell
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+$env:NEBIUS_API_KEY="your-api-key-here"
+```
 
-# 5. Start the server
+*(Optional: You can also just create a `.env` file in the root directory with `NEBIUS_API_KEY=your-api-key-here` instead of exporting it).*
+
+**4. Start the server**
+
+```bash
 uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
 ### Test It
 
-```bash
-# Health check
-curl http://localhost:8000/health
+**Health check** (Returns `{"status": "ok"}`)
 
-# Summarize a repository
+```bash
+curl http://localhost:8000/health
+```
+
+**Summarize a repository** (Takes ~10-20s depending on repo size)
+
+```bash
 curl -X POST http://localhost:8000/summarize \
   -H "Content-Type: application/json" \
   -d '{"github_url": "https://github.com/psf/requests"}'
