@@ -30,6 +30,8 @@ export function Summarizer() {
   const [state, setState] = useState<AppState>({ kind: "idle" });
   const abortRef = useRef<AbortController | null>(null);
 
+  console.log("[v0] Summarizer rendered, state:", state.kind);
+
   const handleSubmit = useCallback(async (url: string) => {
     // Cancel any in-flight request
     abortRef.current?.abort();

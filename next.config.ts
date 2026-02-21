@@ -1,8 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Use src/ directory for Next.js to avoid conflict with Python app/ directory
-  reactCompiler: true,
   rewrites: async () => [
     {
       source: "/api/:path*",
