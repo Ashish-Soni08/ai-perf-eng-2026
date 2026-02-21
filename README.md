@@ -1,6 +1,7 @@
 # GitHub Repository Summarizer API
 
-AI Performance Engineering Course 2026 — Admission Assignment
+**AI Performance Engineering Course 2026 — Admission Assignment**  
+*(See [ADMISSION_TASK.md](./ADMISSION_TASK.md) for the original task requirements and evaluation criteria from Nebius Academy).*
 
 A FastAPI service that takes a public GitHub repository URL and returns a structured, LLM-generated summary of what the project does, its technologies, and how it's organized.
 
