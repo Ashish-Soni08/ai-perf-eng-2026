@@ -290,10 +290,9 @@ ai-perf-eng-2026/
 
 ---
 
-### Built With 🚀
+<div align="center">
+  <img src="./banner.png" alt="Antigravity & Claude Banner" width="100%" />
+</div>
 
-> **Antigravity & Claude 3.7 Sonnet (Thinking Mode)**
->
-> *Image Prompt Idea:* A futuristic, sleek glowing orb representing the 'Antigravity' agent seamlessly merging with a deep neural network visualization representing Claude's advanced 'thinking mode', rendered in dark mode with cyan and purple neon accents, conveying high-speed AI engineering collaboration.
->
-> — **Ashish Soni**
+*Built with **Antigravity** & **Claude 3.7 Sonnet (Thinking Mode)***  
+*— **Ashish Soni***
