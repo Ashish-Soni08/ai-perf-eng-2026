@@ -131,6 +131,27 @@ Returns `{"status": "ok"}` if the server is running.
 
 ---
 
+## How It Works
+
+```mermaid
+flowchart LR
+    A["GitHub URL"] --> B["Parse & Validate"]
+    B --> C["Fetch Metadata\n& File Tree"]
+    C --> D["Filter & Prioritize\nFiles (6 Tiers)"]
+    D --> E["Build Context\n(~200K char budget)"]
+    E --> F["Kimi-K2.5\n(Nebius)"]
+    F --> G["Structured JSON\nResponse"]
+```
+
+1. **Parse** the GitHub URL → extract `owner/repo`
+2. **Fetch** repository metadata (stars, language, topics) and recursive file tree via GitHub API
+3. **Filter** out noise (binaries, lock files, `node_modules/`) and rank files into 6 priority tiers
+4. **Build** a context string within a ~200K character budget: metadata → directory tree → file contents in priority order
+5. **Send** to Kimi-K2.5 with a system prompt enforcing strict JSON output
+6. **Return** the structured response enriched with repo metadata
+
+---
+
 ## Design Decisions
 
 ### Model Choice
@@ -156,6 +177,12 @@ Returns `{"status": "ok"}` if the server is running.
 
 > **Note:** Kimi-K2.5 is a reasoning model. The API returns both `reasoning_content` (chain-of-thought) and `content` (final answer). The app handles both fields automatically, with `max_tokens=8192` to give the model headroom for thinking + structured JSON output.
 
+### Why FastAPI?
+
+- **Async-native** — ideal for I/O-heavy workloads (concurrent GitHub API calls + LLM inference)
+- **Built-in Pydantic validation** — request/response schemas with automatic error messages
+- **Auto-generated OpenAPI docs** — interactive API explorer at `/docs` with zero extra code
+
 ### Repository Content Processing
 
 The core challenge is fitting the most informative parts of a repository into the LLM's context window. Here's the approach:
@@ -175,11 +202,31 @@ The core challenge is fitting the most informative parts of a repository into th
 
 **3. Token budgeting** — A ~200K character budget is allocated. High-priority files are always included (truncated if needed), lower-priority files fill the remaining budget. If the budget runs out, remaining files are omitted with a count.
 
-**4. Structured context** — The LLM receives:
+**4. Structured context** — The final context string sent to the LLM looks like this:
 
-- Repository metadata (name, description, stars, language, topics)
-- Filtered directory tree
-- File contents in priority order
+```
+=== REPOSITORY METADATA ===
+Name: json-render
+Description: From JSON to UI
+Language: TypeScript
+Topics: react, ai, generative-ui
+
+=== DIRECTORY STRUCTURE ===
+packages/
+  core/
+  react/
+  ...
+apps/
+  web/
+
+=== FILE CONTENTS ===
+--- README.md ---
+(file content here)
+
+--- package.json ---
+(file content here)
+...
+```
 
 This strategy ensures the LLM gets the most important information first, even for repositories with thousands of files.
 
