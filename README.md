@@ -1,2 +1,222 @@
-# ai-perf-eng-2026
+# GitHub Repository Summarizer API
+
 AI Performance Engineering Course 2026 — Admission Assignment
+
+A FastAPI service that takes a public GitHub repository URL and returns a structured, LLM-generated summary of what the project does, its technologies, and how it's organized.
+
+## Quick Start
+
+### Prerequisites
+
+- **Python 3.10+** (tested with 3.12)
+- **Nebius Token Factory API key** — [sign up here](https://tokenfactory.nebius.com/) (free $1 credit)
+
+### Setup
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/Ashish-Soni08/ai-perf-eng-2026.git
+cd ai-perf-eng-2026
+
+# 2. Create a virtual environment and install dependencies
+python -m venv .venv
+
+# On Windows:
+.venv\Scripts\activate
+
+# On macOS/Linux:
+source .venv/bin/activate
+
+pip install -r requirements.txt
+
+# 3. Set your Nebius API key
+# On Windows (PowerShell):
+$env:NEBIUS_API_KEY="your-api-key-here"
+
+# On macOS/Linux:
+export NEBIUS_API_KEY="your-api-key-here"
+
+# Or create a .env file (auto-loaded by the app):
+echo "NEBIUS_API_KEY=your-api-key-here" > .env
+
+# 4. (Optional) Set a GitHub token for higher rate limits
+export GITHUB_TOKEN="your-github-token"
+
+# 5. Start the server
+uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
+
+### Test It
+
+```bash
+# Health check
+curl http://localhost:8000/health
+
+# Summarize a repository
+curl -X POST http://localhost:8000/summarize \
+  -H "Content-Type: application/json" \
+  -d '{"github_url": "https://github.com/psf/requests"}'
+```
+
+The interactive API docs are available at [http://localhost:8000/docs](http://localhost:8000/docs).
+
+---
+
+## API Reference
+
+### `GET /health`
+
+Returns `{"status": "ok"}` if the server is running.
+
+### `POST /summarize`
+
+**Request:**
+
+```json
+{
+  "github_url": "https://github.com/psf/requests"
+}
+```
+
+**Success Response (200):**
+
+```json
+{
+  "summary": "Requests is a popular, elegant HTTP library for Python...",
+  "technologies": ["Python", "urllib3", "certifi", "chardet"],
+  "structure": "The main source code is in `src/requests/`, with tests in `tests/` and documentation in `docs/`.",
+  "repo_metadata": {
+    "name": "requests",
+    "owner": "psf",
+    "url": "https://github.com/psf/requests",
+    "stars": 52000,
+    "language": "Python",
+    "default_branch": "main"
+  }
+}
+```
+
+**Error Response:**
+
+```json
+{
+  "status": "error",
+  "message": "Description of what went wrong"
+}
+```
+
+| Status | When |
+|--------|------|
+| 422 | Invalid or missing `github_url` |
+| 404 | Repository not found or private |
+| 429 | GitHub API rate limit exceeded |
+| 500 | Server configuration error |
+| 502 | LLM service error |
+| 504 | Timeout (GitHub or LLM) |
+
+---
+
+## Design Decisions
+
+### Model Choice
+
+**Model:** [`moonshotai/Kimi-K2.5`](https://tokenfactory.nebius.com/) via Nebius Token Factory (eu-west1)
+
+| Spec | Value |
+|------|-------|
+| Context window | 256K tokens |
+| Quantization | INT4 |
+| Speed | ~60 tok/s |
+| Pricing | $0.50/M input · $2.50/M output |
+| License | MIT |
+| Capabilities | Text-to-text, tool calling, reasoning |
+
+**Why this model?**
+
+- **256K context** — handles even large repositories without truncation
+- **Reasoning model** — uses chain-of-thought for better analysis
+- **Strong instruction following** — reliably outputs structured JSON
+- **Cost-effective** — well within the $1 free Nebius credit budget
+- **MIT licensed** — fully open-source (built on ~15T mixed visual & text tokens)
+
+> **Note:** Kimi-K2.5 is a reasoning model. The API returns both `reasoning_content` (chain-of-thought) and `content` (final answer). The app handles both fields automatically, with `max_tokens=8192` to give the model headroom for thinking + structured JSON output.
+
+### Repository Content Processing
+
+The core challenge is fitting the most informative parts of a repository into the LLM's context window. Here's the approach:
+
+**1. Skip irrelevant files** — Binary files (images, fonts, compiled code), lock files (`package-lock.json`, `poetry.lock`), generated directories (`node_modules/`, `dist/`, `__pycache__/`), and IDE configs are never fetched.
+
+**2. Tiered file prioritization** — Files are ranked by information value:
+
+| Priority | What | Why |
+|----------|------|-----|
+| Tier 1 | `README.md` | Best project overview |
+| Tier 2 | Package manifests (`package.json`, `pyproject.toml`, etc.) | Technologies & dependencies |
+| Tier 3 | Config files (`Dockerfile`, `Makefile`, `tsconfig.json`) | Architecture & tooling |
+| Tier 4 | Entry points (`main.py`, `app.js`, `index.ts`) | Core logic |
+| Tier 5 | Other source files | Additional context |
+| Tier 6 | Supplementary docs (`CONTRIBUTING.md`, `LICENSE`) | Low priority |
+
+**3. Token budgeting** — A ~200K character budget is allocated. High-priority files are always included (truncated if needed), lower-priority files fill the remaining budget. If the budget runs out, remaining files are omitted with a count.
+
+**4. Structured context** — The LLM receives:
+
+- Repository metadata (name, description, stars, language, topics)
+- Filtered directory tree
+- File contents in priority order
+
+This strategy ensures the LLM gets the most important information first, even for repositories with thousands of files.
+
+---
+
+## Running Tests
+
+```bash
+# Install test dependencies
+pip install pytest
+
+# Run all tests
+pytest tests/ -v
+
+# Run without network-dependent tests
+pytest tests/ -v -k "not nonexistent_repo"
+```
+
+The test suite includes **69 tests** covering:
+
+- URL parsing (12 cases)
+- Content filtering — skip rules, tier assignment, file selection
+- LLM response parsing and validation
+- Pydantic model validation
+- API endpoints via FastAPI TestClient
+
+---
+
+## Project Structure
+
+```
+ai-perf-eng-2026/
+├── app/
+│   ├── __init__.py
+│   ├── main.py            # FastAPI app, CORS, endpoints, error handlers
+│   ├── models.py           # Pydantic request/response schemas
+│   ├── config.py           # Configuration from environment variables
+│   ├── github_fetcher.py   # GitHub API interaction
+│   ├── content_filter.py   # File filtering & context building
+│   └── llm_client.py       # Nebius Token Factory LLM integration
+├── tests/
+│   ├── __init__.py
+│   └── test_app.py         # Comprehensive test suite
+├── requirements.txt
+└── README.md
+```
+
+---
+
+## Environment Variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `NEBIUS_API_KEY` | Yes | Your Nebius Token Factory API key |
+| `GITHUB_TOKEN` | No | GitHub personal access token (increases rate limit from 60 to 5000 req/hr) |
