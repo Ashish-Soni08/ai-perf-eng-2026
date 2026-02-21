@@ -293,6 +293,3 @@ ai-perf-eng-2026/
 <div align="center">
   <img src="./banner.png" alt="Antigravity & Claude Banner" width="100%" />
 </div>
-
-*Built with **Antigravity** & **Claude 3.7 Sonnet (Thinking Mode)***  
-*— **Ashish Soni***
