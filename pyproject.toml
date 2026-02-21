@@ -1,0 +1,8 @@
+[project]
+name = "github-repo-summarizer"
+version = "1.0.0"
+description = "AI-powered GitHub repository summarizer API"
+requires-python = ">=3.11"
+
+[project.scripts]
+app = "app.main:app"
