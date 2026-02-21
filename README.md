@@ -1,7 +1,7 @@
 # GitHub Repository Summarizer API
 
 **AI Performance Engineering Course 2026 — Admission Assignment**  
-*(See [ADMISSION_TASK.md](./ADMISSION_TASK.md) for the original task requirements and evaluation criteria from Nebius Academy).*
+*(See [docs/ADMISSION_TASK.md](./docs/ADMISSION_TASK.md) for the original task requirements and evaluation criteria from Nebius Academy).*
 
 A FastAPI service that takes a public GitHub repository URL and returns a structured, LLM-generated summary of what the project does, its technologies, and how it's organized.
 
@@ -287,3 +287,13 @@ ai-perf-eng-2026/
 |----------|----------|-------------|
 | `NEBIUS_API_KEY` | Yes | Your Nebius Token Factory API key |
 | `GITHUB_TOKEN` | No | GitHub personal access token (increases rate limit from 60 to 5000 req/hr) |
+
+---
+
+### Built With 🚀
+
+> **Antigravity & Claude 3.7 Sonnet (Thinking Mode)**
+>
+> *Image Prompt Idea:* A futuristic, sleek glowing orb representing the 'Antigravity' agent seamlessly merging with a deep neural network visualization representing Claude's advanced 'thinking mode', rendered in dark mode with cyan and purple neon accents, conveying high-speed AI engineering collaboration.
+>
+> — **Ashish Soni**
