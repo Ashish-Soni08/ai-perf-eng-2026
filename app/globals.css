@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* Scan json-render shadcn components so their Tailwind classes are included */
-@source "../../node_modules/@json-render/shadcn";
+@source "../node_modules/@json-render/shadcn";
 
 @theme {
   --color-background: #09090b;
